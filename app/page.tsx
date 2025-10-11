@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Droplets, Search, Thermometer, Wind } from "lucide-react"
-import { getForecastData, getWeatherData } from "./actions";
+import { getWeatherData } from "./actions";
 import { useState } from "react";
 import { WeatherData } from "@/types/weather";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,16 +21,24 @@ function SubmitButton() {
 export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
+  const [error, setError] = useState<string>("");
 
   const handleSearch = async (formData: FormData) => {
-    const city = formData.get("city") as string;
-    const { data } = await getWeatherData(city);
+    setError("")
 
-    const { data2 } = await getForecastData(city);
+    const city = formData.get("city") as string;
+    const { data, data2,  error: weatherError } = await getWeatherData(city);
+
+    
     console.log(data2);
     
     if (data) {
       setWeather(data);
+    }
+
+    if (weatherError) {
+      setError(weatherError);
+      setWeather(null);
     }
 
     if (data2) {
@@ -54,6 +62,10 @@ export default function Home() {
             <SubmitButton />
           </form>
 
+          {error && (
+            <div className="text-center text-neutral-50 border border-neutral-50 bg-zinc-600/50 rounded-md p-2"> {error} </div>
+          )}
+          
           {weather && forecast && (
             <div>
               <Card className="bg-white/70 backdrop-blur">
